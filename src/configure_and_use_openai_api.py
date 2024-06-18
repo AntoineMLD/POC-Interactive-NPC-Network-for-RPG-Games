@@ -2,38 +2,38 @@ import openai
 import os
 from dotenv import load_dotenv
 
-# Construire le chemin vers le fichier .env dans le répertoire racine
+# Build the path to the .env file in the root directory
 dotenv_path = os.path.join(os.path.dirname(os.path.dirname(__file__)), '.env')
 load_dotenv(dotenv_path)
 
 def configure_openai_api():
-    """Configure les paramètres de l'API OpenAI en utilisant les variables d'environnement."""
+    """Configure OpenAI API settings using environment variables."""
     openai.api_type = "azure"
     openai.api_key = os.getenv("OPENAI_API_KEY")
     openai.api_base = os.getenv("OPENAI_API_BASE")
     openai.api_version = os.getenv("OPENAI_API_VERSION")
 
-    # Vérification des valeurs chargées
+    # Check loaded values
     if None in [openai.api_key, openai.api_base, openai.api_version]:
-        raise ValueError("Une ou plusieurs variables d'environnement sont manquantes ou incorrectes. Vérifiez votre fichier .env.")
+        raise ValueError("One or more environment variables are missing or incorrect. Check your .env file.")
 
-# Appel de la fonction pour configurer l'API au chargement du module
+# Call the function to configure the API when the module is loaded
 configure_openai_api()
 
-# Fonction pour générer un dialogue avec GPT-3.5 Turbo
+# Function to generate a dialogue with GPT-3.5 Turbo
 def generate_dialogue(prompt):
     response = openai.Completion.create(
         engine=os.getenv("OPENAI_API_DEPLOYMENT"),
         prompt=prompt,
-        max_tokens=200,      # Augmenter le nombre de tokens pour permettre des réponses plus longues si nécessaire
-        temperature=0.7,     # Contrôle la créativité de la réponse
-        n=1,                 # Nombre de réponses à générer
-        stop=["\n", "Joueur", "Le"]  # Arrêter après ces tokens pour éviter des réponses trop longues ou incomplètes
+        max_tokens=200,      # Increase the number of tokens to allow for longer responses if necessary
+        temperature=0.7,     # Controls the creativity of the response
+        n=1,                 # Number of responses to generate
+        stop=["\n", "Player", "The"]  # Stop after these tokens to avoid overly long or incomplete responses
     )
     return response.choices[0].text.strip()
 
-# Exemple d'utilisation
+# Example usage
 if __name__ == "__main__":
-    prompt = "Le joueur demande au Guérisseur : Comment puis-je aider le village ?"
+    prompt = "The player asks the Healer: How can I help the village?"
     response = generate_dialogue(prompt)
-    print(f"Réponse du modèle : {response}")
+    print(f"Model response: {response}")

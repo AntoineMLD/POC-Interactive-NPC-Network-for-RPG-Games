@@ -2,52 +2,49 @@ import streamlit as st
 import pandas as pd
 import networkx as nx
 import matplotlib.pyplot as plt
-import sys 
-import os 
+import sys
+import os
 
-# Ajouter le répertoire 'src' au PYTHONPATH
+# Adding the 'src' directory to the PYTHONPATH
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..', 'src')))
 
 from configure_and_use_openai_api import generate_dialogue
 
-# Ajouter le répertoire parent du répertoire courant au PYTHONPATH
-import sys
-sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
-
+# Load the CSV file into a DataFrame
 csv_path = os.path.join(os.path.dirname(__file__), "dialogues_valoria_enriched.csv")
 df = pd.read_csv(csv_path)
 
-# Créer le graphe des interactions entre les PNJ
+# Create the graph of interactions between NPCs
 G = nx.Graph()
-for pnj in df['PNJ'].unique():
-    G.add_node(pnj, role=df[df['PNJ'] == pnj]['Rôle'].iloc[0])
+for npc in df['NPC'].unique():
+    G.add_node(npc, role=df[df['NPC'] == npc]['Role'].iloc[0])
 
-# Ajouter explicitement des nœuds supplémentaires si nécessaires
-additional_nodes = ["Villageois"]
+# Add additional nodes if necessary
+additional_nodes = ["Villager"]
 for node in additional_nodes:
     if node not in G:
-        G.add_node(node, role="Communauté")
+        G.add_node(node, role="Community")
 
-# Ajouter les arêtes basées sur les interactions
+# Add edges based on the interactions described in the CSV file
 for index, row in df.iterrows():
-    if pd.notna(row['Rumeur/Action']):
-        G.add_edge(row['PNJ'], row['Rumeur/Action'], context=row['Contexte_détaillé'])
+    if pd.notna(row['Rumor/Action']):
+        G.add_edge(row['NPC'], row['Rumor/Action'], context=row['Detailed_Context'])
 
-# Initialiser les clés du session_state manquantes
-if 'selected_pnj' not in st.session_state:
-    st.session_state.selected_pnj = df['PNJ'].unique()[0]
+# Initialize missing session state keys
+if 'selected_npc' not in st.session_state:
+    st.session_state.selected_npc = df['NPC'].unique()[0]
 
 if 'selected_scenario' not in st.session_state:
-    st.session_state.selected_scenario = "Attaque"
+    st.session_state.selected_scenario = "Attack"
 
 if 'rumor' not in st.session_state:
-    st.session_state.rumor = "Une attaque imminente a été signalée."
+    st.session_state.rumor = "An imminent attack has been reported."
 
-if 'selected_pnj_for_help' not in st.session_state:
-    st.session_state.selected_pnj_for_help = df['PNJ'].unique()[0]
+if 'selected_npc_for_help' not in st.session_state:
+    st.session_state.selected_npc_for_help = df['NPC'].unique()[0]
 
 if 'selected_context_for_help' not in st.session_state:
-    st.session_state.selected_context_for_help = "attaque"
+    st.session_state.selected_context_for_help = "attack"
 
 if 'quests' not in st.session_state:
     st.session_state.quests = []
@@ -58,205 +55,205 @@ if 'completed_quests' not in st.session_state:
 if 'interactions' not in st.session_state:
     st.session_state.interactions = []
 
-# Ajouter les initialisations pour les sélections d'interactions entre PNJ
-if 'interaction_pnj1' not in st.session_state:
-    st.session_state.interaction_pnj1 = df['PNJ'].unique()[0]
+# Initialize the keys for interactions between NPCs
+if 'interaction_npc1' not in st.session_state:
+    st.session_state.interaction_npc1 = df['NPC'].unique()[0]
 
-if 'interaction_pnj2' not in st.session_state:
-    st.session_state.interaction_pnj2 = df['PNJ'].unique()[1]
+if 'interaction_npc2' not in st.session_state:
+    st.session_state.interaction_npc2 = df['NPC'].unique()[1]
 
 if 'interaction_context' not in st.session_state:
-    st.session_state.interaction_context = "demande de ressources"
+    st.session_state.interaction_context = "resource request"
 
-# Interface Streamlit
-st.title("Réseau de PNJ Interactifs à Valoria")
+# Streamlit interface
+st.title("Interactive NPC Network in Valoria")
 
-# Afficher les options de PNJ avec la gestion de l'état
-st.session_state.selected_pnj = st.selectbox(
-    "Sélectionnez un PNJ:", df['PNJ'].unique(), index=list(df['PNJ'].unique()).index(st.session_state.selected_pnj)
+# Show NPC options with state management
+st.session_state.selected_npc = st.selectbox(
+    "Select an NPC:", df['NPC'].unique(), index=list(df['NPC'].unique()).index(st.session_state.selected_npc)
 )
 
-# Afficher les interactions du PNJ sélectionné
-if st.button("Voir les interactions"):
-    neighbors = list(G.neighbors(st.session_state.selected_pnj))
-    st.write(f"{st.session_state.selected_pnj} est connecté avec : {neighbors}")
+# Display interactions of the selected NPC
+if st.button("View Interactions"):
+    neighbors = list(G.neighbors(st.session_state.selected_npc))
+    st.write(f"{st.session_state.selected_npc} is connected with: {neighbors}")
 
-    # Visualiser le graphe centré sur le PNJ sélectionné
-    subgraph = G.subgraph([st.session_state.selected_pnj] + neighbors)
+    # Visualize the graph centered on the selected NPC
+    subgraph = G.subgraph([st.session_state.selected_npc] + neighbors)
     pos = nx.spring_layout(subgraph)
     plt.figure(figsize=(8, 6))
     nx.draw(subgraph, pos, with_labels=True, node_color='lightblue', edge_color='grey', node_size=2000, font_size=10, font_weight='bold')
     nx.draw_networkx_edge_labels(subgraph, pos, edge_labels=nx.get_edge_attributes(subgraph, 'context'))
     st.pyplot(plt)
 
-# Fonction pour propager des rumeurs dans le réseau
+# Function to propagate rumors in the network
 def propagate_rumor(graph, start_node, rumor):
     nx.set_node_attributes(graph, {start_node: rumor}, 'rumor')
     for neighbor in graph.neighbors(start_node):
         graph.nodes[neighbor]['rumor'] = rumor
-        st.write(f"Rumeur propagée de {start_node} à {neighbor} : {rumor}")
+        st.write(f"Rumor propagated from {start_node} to {neighbor}: {rumor}")
 
-# Propagation de rumeurs à partir du PNJ sélectionné
-st.session_state.rumor = st.text_input("Entrer la rumeur à propager:", st.session_state.rumor)
+# Propagate rumors starting from the selected NPC
+st.session_state.rumor = st.text_input("Enter the rumor to propagate:", st.session_state.rumor)
 
-if st.button("Propager la rumeur"):
-    propagate_rumor(G, st.session_state.selected_pnj, st.session_state.rumor)
+if st.button("Propagate Rumor"):
+    propagate_rumor(G, st.session_state.selected_npc, st.session_state.rumor)
 
-    # Afficher les nœuds avec leurs rumeurs propagées
-    st.write("Nœuds avec les rumeurs propagées :")
+    # Display nodes with their propagated rumors
+    st.write("Nodes with propagated rumors:")
     for node, data in G.nodes(data=True):
         if 'rumor' in data:
-            st.write(f"{node} a reçu la rumeur : {data['rumor']}")
+            st.write(f"{node} received the rumor: {data['rumor']}")
 
-# Simulation de scénarios en temps réel
-st.header("Simulation de Scénarios")
-scenarios = ["Attaque", "Récolte de ressources", "Festival"]
+# Real-time scenario simulation
+st.header("Scenario Simulation")
+scenarios = ["Attack", "Resource Gathering", "Festival"]
 st.session_state.selected_scenario = st.selectbox(
-    "Choisissez un scénario à simuler:", scenarios, index=scenarios.index(st.session_state.selected_scenario)
+    "Choose a scenario to simulate:", scenarios, index=scenarios.index(st.session_state.selected_scenario)
 )
 
-if st.button("Simuler le scénario"):
-    if st.session_state.selected_scenario == "Attaque":
-        st.write("Simulation d'une attaque imminente...")
-        start_node = "Garde"
-        rumor = "Une attaque imminente a été signalée."
+if st.button("Simulate Scenario"):
+    if st.session_state.selected_scenario == "Attack":
+        st.write("Simulating an imminent attack...")
+        start_node = "Guard"
+        rumor = "An imminent attack has been reported."
         propagate_rumor(G, start_node, rumor)
-        st.write("Les PNJ se préparent pour l'attaque.")
-    elif st.session_state.selected_scenario == "Récolte de ressources":
-        st.write("Simulation de la récolte des ressources...")
-        start_node = "Fermière"
-        rumor = "La récolte du blé commence aujourd'hui."
+        st.write("The NPCs are preparing for the attack.")
+    elif st.session_state.selected_scenario == "Resource Gathering":
+        st.write("Simulating resource gathering...")
+        start_node = "Farmer"
+        rumor = "The wheat harvest starts today."
         propagate_rumor(G, start_node, rumor)
-        st.write("Les PNJ se mobilisent pour la récolte.")
+        st.write("The NPCs are mobilizing for the harvest.")
     elif st.session_state.selected_scenario == "Festival":
-        st.write("Simulation du festival du village...")
-        start_node = "Seigneur"
-        rumor = "Le festival annuel du village commence ce soir."
+        st.write("Simulating the village festival...")
+        start_node = "Lord"
+        rumor = "The village's annual festival starts tonight."
         propagate_rumor(G, start_node, rumor)
-        st.write("Les PNJ se préparent pour le festival.")
+        st.write("The NPCs are preparing for the festival.")
 
-# Générer des réponses contextuelles pour les PNJ
-def get_contextual_response(pnj, context):
-    prompt = f"Le joueur demande à {pnj} comment il peut aider pendant {context}. {pnj} répond directement au joueur :"
+# Generate contextual responses for NPCs
+def get_contextual_response(npc, context):
+    prompt = f"The player asks {npc} how they can help during {context}. {npc} responds directly to the player:"
     response = generate_dialogue(prompt)
     return response
 
-# Sélectionner le PNJ et le contexte pour la demande d'aide
-st.session_state.selected_pnj_for_help = st.selectbox(
-    "Choisissez un PNJ pour demander de l'aide:", df['PNJ'].unique(), index=list(df['PNJ'].unique()).index(st.session_state.selected_pnj_for_help)
+# Select the NPC and context for the request for help
+st.session_state.selected_npc_for_help = st.selectbox(
+    "Choose an NPC to ask for help:", df['NPC'].unique(), index=list(df['NPC'].unique()).index(st.session_state.selected_npc_for_help)
 )
 st.session_state.selected_context_for_help = st.selectbox(
-    "Choisissez le contexte de la demande:", ["attaque", "récolte", "festival"], index=["attaque", "récolte", "festival"].index(st.session_state.selected_context_for_help)
+    "Choose the context of the request:", ["attack", "harvest", "festival"], index=["attack", "harvest", "festival"].index(st.session_state.selected_context_for_help)
 )
 
-# Fonction pour déterminer les PNJ impliqués dans une quête
-def get_pnjs_involved_in_quest(start_pnj, context):
-    involved_pnjs = [start_pnj]
-    if context == "attaque":
-        involved_pnjs += ["Garde", "Forgeron", "Chasseur"]
-    elif context == "récolte":
-        involved_pnjs += ["Fermière", "Marchand"]
+# Function to determine NPCs involved in a quest
+def get_npcs_involved_in_quest(start_npc, context):
+    involved_npcs = [start_npc]
+    if context == "attack":
+        involved_npcs += ["Guard", "Blacksmith", "Hunter"]
+    elif context == "harvest":
+        involved_npcs += ["Farmer", "Merchant"]
     elif context == "festival":
-        involved_pnjs += ["Seigneur", "Villageois"]
-    return involved_pnjs
+        involved_npcs += ["Lord", "Villager"]
+    return involved_npcs
 
-# Utilisation de la fonction dans l'interface Streamlit
-if st.button("Demander de l'aide"):
-    response = get_contextual_response(st.session_state.selected_pnj_for_help, st.session_state.selected_context_for_help)
-    st.write(f"Réponse de {st.session_state.selected_pnj_for_help} : {response}")
+# Use the function in the Streamlit interface
+if st.button("Ask for Help"):
+    response = get_contextual_response(st.session_state.selected_npc_for_help, st.session_state.selected_context_for_help)
+    st.write(f"Response from {st.session_state.selected_npc_for_help}: {response}")
 
-    involved_pnjs = get_pnjs_involved_in_quest(st.session_state.selected_pnj_for_help, st.session_state.selected_context_for_help)
-    quest_description = f"Aidez {st.session_state.selected_pnj_for_help} à {st.session_state.selected_context_for_help}."
+    involved_npcs = get_npcs_involved_in_quest(st.session_state.selected_npc_for_help, st.session_state.selected_context_for_help)
+    quest_description = f"Help {st.session_state.selected_npc_for_help} with {st.session_state.selected_context_for_help}."
     quest = {
-        "Initiateur": st.session_state.selected_pnj_for_help,
+        "Initiator": st.session_state.selected_npc_for_help,
         "Description": quest_description,
         "Status": "Active",
-        "Involved_PNJs": involved_pnjs
+        "Involved_NPCs": involved_npcs
     }
     st.session_state.quests.append(quest)
-    st.write(f"Quête initiée par {st.session_state.selected_pnj_for_help} avec les PNJ impliqués {involved_pnjs} : {quest_description}")
+    st.write(f"Quest initiated by {st.session_state.selected_npc_for_help} with the NPCs involved {involved_npcs}: {quest_description}")
 
-# Fonction pour initier des interactions entre les PNJ avec une structure de transaction
-def initiate_pnj_interaction(pnj1, pnj2, context):
-    if context == "demande de ressources":
+# Function to initiate interactions between NPCs with a transaction structure
+def initiate_npc_interaction(npc1, npc2, context):
+    if context == "resource request":
         dialogue_steps = [
-            f"{pnj1} envoie une requête à {pnj2} pour fournir les ressources nécessaires.",
-            f"{pnj2} confirme la disponibilité des ressources et envoie une réponse avec la quantité et le prix.",
-            f"{pnj1} envoie les crédits à {pnj2}.",
-            f"{pnj2} envoie les ressources à {pnj1}.",
-            "La transaction est complétée avec succès."
+            f"{npc1} sends a request to {npc2} to provide the necessary resources.",
+            f"{npc2} confirms the availability of resources and sends a response with the quantity and price.",
+            f"{npc1} sends the credits to {npc2}.",
+            f"{npc2} sends the resources to {npc1}.",
+            "The transaction is successfully completed."
         ]
     else:
-        dialogue_steps = [f"{pnj1} informe {pnj2} de {context}. {pnj2} réagit en conséquence."]
+        dialogue_steps = [f"{npc1} informs {npc2} of {context}. {npc2} reacts accordingly."]
 
-    # Générer et afficher les dialogues pour chaque étape
+    # Generate and display dialogues for each step
     full_interaction = ""
     for step in dialogue_steps:
-        prompt = f"{step} {pnj2} répond :"
+        prompt = f"{step} {npc2} responds:"
         response = generate_dialogue(prompt)
         cleaned_response = clean_response(response)
         if not cleaned_response:
-            cleaned_response = "Le dialogue n'a pas pu être généré. Réessayez ou définissez un message par défaut."
+            cleaned_response = "The dialogue could not be generated. Please try again or set a default message."
         full_interaction += f"{step} {cleaned_response}\n"
 
     return full_interaction
 
 def clean_response(response):
     response = response.strip().replace('"', '')
-    if response.lower() in ["", "réponse :"]:
+    if response.lower() in ["", "response :"]:
         return None
     return response
 
-# Ajouter des interactions directes entre les PNJ
-st.header("Interactions Directes entre PNJ")
-st.session_state.interaction_pnj1 = st.selectbox(
-    "Sélectionnez le premier PNJ pour l'interaction :", df['PNJ'].unique(), key='pnj1', index=list(df['PNJ'].unique()).index(st.session_state.interaction_pnj1)
+# Add direct interactions between NPCs
+st.header("Direct Interactions between NPCs")
+st.session_state.interaction_npc1 = st.selectbox(
+    "Select the first NPC for the interaction:", df['NPC'].unique(), key='npc1', index=list(df['NPC'].unique()).index(st.session_state.interaction_npc1)
 )
-st.session_state.interaction_pnj2 = st.selectbox(
-    "Sélectionnez le deuxième PNJ pour l'interaction :", df['PNJ'].unique(), key='pnj2', index=list(df['PNJ'].unique()).index(st.session_state.interaction_pnj2)
+st.session_state.interaction_npc2 = st.selectbox(
+    "Select the second NPC for the interaction:", df['NPC'].unique(), key='npc2', index=list(df['NPC'].unique()).index(st.session_state.interaction_npc2)
 )
 st.session_state.interaction_context = st.selectbox(
-    "Choisissez le contexte de l'interaction :", ["présence suspecte", "demande de ressources", "planification de la récolte"], index=["présence suspecte", "demande de ressources", "planification de la récolte"].index(st.session_state.interaction_context)
+    "Choose the context of the interaction:", ["suspicious presence", "resource request", "harvest planning"], index=["suspicious presence", "resource request", "harvest planning"].index(st.session_state.interaction_context)
 )
 
-if st.button("Initier une interaction entre PNJ"):
-    interaction_response = initiate_pnj_interaction(st.session_state.interaction_pnj1, st.session_state.interaction_pnj2, st.session_state.interaction_context)
-    st.write(f"Interaction entre {st.session_state.interaction_pnj1} et {st.session_state.interaction_pnj2} sur le thème '{st.session_state.interaction_context}':")
+if st.button("Initiate an Interaction between NPCs"):
+    interaction_response = initiate_npc_interaction(st.session_state.interaction_npc1, st.session_state.interaction_npc2, st.session_state.interaction_context)
+    st.write(f"Interaction between {st.session_state.interaction_npc1} and {st.session_state.interaction_npc2} on the theme '{st.session_state.interaction_context}':")
     st.write(interaction_response)
 
-    # Ajouter l'interaction à l'historique des interactions
-    st.session_state.interactions.append((st.session_state.interaction_pnj1, st.session_state.interaction_pnj2, st.session_state.interaction_context, interaction_response))
+    # Add the interaction to the interaction history
+    st.session_state.interactions.append((st.session_state.interaction_npc1, st.session_state.interaction_npc2, st.session_state.interaction_context, interaction_response))
 
-# Afficher l'historique des interactions entre PNJ
-st.subheader("Historique des Interactions entre PNJ")
+# Display the interaction history between NPCs
+st.subheader("Interaction History between NPCs")
 for interaction in st.session_state.interactions:
-    st.write(f"{interaction[0]} a informé {interaction[1]} sur le thème '{interaction[2]}'. Réponse : {interaction[3]}")
+    st.write(f"{interaction[0]} informed {interaction[1]} on the theme '{interaction[2]}'. Response: {interaction[3]}")
 
-# Afficher le journal des quêtes
-st.subheader("Journal des Quêtes")
+# Display the quest journal
+st.subheader("Quest Journal")
 for quest in st.session_state.quests:
-    st.write(f"Quête de {quest['Initiateur']} : {quest['Description']} - Statut : {quest['Status']}")
-    st.write(f"PNJ impliqués : {', '.join(quest['Involved_PNJs'])}")
-    if st.button(f"Marquer comme terminée", key=f"complete_{quest['Initiateur']}"):
-        quest['Status'] = "Terminée"
+    st.write(f"Quest by {quest['Initiator']}: {quest['Description']} - Status: {quest['Status']}")
+    st.write(f"NPCs involved: {', '.join(quest['Involved_NPCs'])}")
+    if st.button(f"Mark as completed", key=f"complete_{quest['Initiator']}"):
+        quest['Status'] = "Completed"
         st.session_state.completed_quests.append(quest)
         st.session_state.quests.remove(quest)
-        st.success(f"Quête terminée : {quest['Description']}")
+        st.success(f"Quest completed: {quest['Description']}")
 
-# Visualiser l'impact des quêtes sur le réseau de PNJ
+# Visualize the impact of quests on the NPC network
 if st.session_state.quests or st.session_state.completed_quests:
-    st.header("Impact des Quêtes sur le Réseau de PNJ")
+    st.header("Impact of Quests on the NPC Network")
     plt.figure(figsize=(12, 8))
     pos = nx.spring_layout(G)
     nx.draw(G, pos, with_labels=True, node_color='lightblue', edge_color='grey', node_size=2000, font_size=10, font_weight='bold')
 
-    # Colorer les nœuds avec des quêtes actives
-    active_nodes = [n for n in G.nodes if n in [pnj for quest in st.session_state.quests for pnj in quest['Involved_PNJs']]]
+    # Color nodes with active quests
+    active_nodes = [n for n in G.nodes if n in [npc for quest in st.session_state.quests for npc in quest['Involved_NPCs']]]
     nx.draw_networkx_nodes(G, pos, nodelist=active_nodes, node_color='yellow')
 
-    # Colorer les nœuds avec des quêtes terminées
-    completed_nodes = [n for n in G.nodes if n in [pnj for quest in st.session_state.completed_quests for pnj in quest['Involved_PNJs']]]
+    # Color nodes with completed quests
+    completed_nodes = [n for n in G.nodes if n in [npc for quest in st.session_state.completed_quests for npc in quest['Involved_NPCs']]]
     nx.draw_networkx_nodes(G, pos, nodelist=completed_nodes, node_color='green')
 
-    plt.title("Impact des Quêtes sur le Réseau de PNJ")
+    plt.title("Impact of Quests on the NPC Network")
     st.pyplot(plt)

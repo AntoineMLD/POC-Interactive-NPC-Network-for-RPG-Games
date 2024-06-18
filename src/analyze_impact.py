@@ -3,66 +3,74 @@ import networkx as nx
 import os
 
 def analyze_impact(csv_path, start_node, rumor):
-    # Charger le fichier CSV enrichi des dialogues
+    # Load the enriched dialogue CSV file
     df = pd.read_csv(csv_path)
 
-    # Créer le graphe des interactions entre les PNJ
+    # Create the graph of interactions between NPCs
     G = nx.Graph()
 
-    # Ajouter des nœuds pour chaque PNJ
-    for pnj in df['PNJ'].unique():
-        G.add_node(pnj, role=df[df['PNJ'] == pnj]['Rôle'].iloc[0])
+    # Add nodes for each NPC
+    for npc in df['NPC'].unique():
+        G.add_node(npc, role=df[df['NPC'] == npc]['Role'].iloc[0])
 
-    # Ajouter des arêtes basées sur les interactions décrites dans le fichier CSV
+    # Add edges based on interactions described in the CSV file
     for index, row in df.iterrows():
-        if pd.notna(row['Rumeur/Action']):
-            G.add_edge(row['PNJ'], row['Rumeur/Action'], context=row['Contexte_détaillé'])
+        if pd.notna(row['Rumor/Action']):
+            G.add_edge(row['NPC'], row['Rumor/Action'], context=row['Detailed_Context'])
 
-    # Fonction pour simuler la propagation d'une rumeur dans le réseau de PNJ
+    # Function to propagate the rumor in the NPC network
     def propagate_rumor(graph, start_node, rumor):
-        # Marquer le nœud de départ avec la rumeur
-        nx.set_node_attributes(graph, {start_node: rumor}, 'rumor')
+        # Use a queue for BFS (Breadth-First Search) to ensure full propagation
+        queue = [start_node]
+        impacted_nodes = set()
         
-        # Propager la rumeur aux voisins
-        for neighbor in graph.neighbors(start_node):
-            graph.nodes[neighbor]['rumor'] = rumor
-            print(f"Rumeur propagée de {start_node} à {neighbor} : {rumor}")
+        while queue:
+            current_node = queue.pop(0)
+            impacted_nodes.add(current_node)
+            
+            # Propagate the rumor to all neighbors
+            for neighbor in graph.neighbors(current_node):
+                if neighbor not in impacted_nodes:
+                    graph.nodes[neighbor]['rumor'] = rumor
+                    queue.append(neighbor)
+                    impacted_nodes.add(neighbor)
+                    print(f"Rumor propagated from {current_node} to {neighbor}: {rumor}")
 
-    # Exécuter la propagation de la rumeur
-    propagate_rumor(G, start_node, rumor)
+        return impacted_nodes
 
-    # Afficher les nœuds avec leurs rumeurs propagées
-    print("\nNœuds avec les rumeurs propagées:")
+    # Execute rumor propagation
+    impacted_nodes = propagate_rumor(G, start_node, rumor)
+
+    # Display nodes with their propagated rumors
+    print("\nNodes with propagated rumors:")
     for node, data in G.nodes(data=True):
         if 'rumor' in data:
-            print(f"{node} a reçu la rumeur : {data['rumor']}")
+            print(f"{node} received the rumor: {data['rumor']}")
 
-    # Analyse de l'impact de la propagation des rumeurs
-    print("\nAnalyse des relations après la propagation de la rumeur:")
+    # Analyze the impact of rumor propagation
+    print("\nAnalysis of relationships after rumor propagation:")
 
-    # Observer les relations après la propagation de la rumeur
+    # Observe relationships after the rumor has spread
     for node in G.nodes():
         neighbors = list(G.neighbors(node))
-        print(f"{node} est maintenant connecté à : {neighbors}")
+        print(f"{node} is now connected to: {neighbors}")
 
-    # Analyser les changements de dynamique après la propagation
-    print("\nAnalyse des relations renforcées après la propagation de la rumeur:")
+    # Analyze dynamic changes after propagation
+    print("\nAnalysis of strengthened relationships after rumor propagation:")
     for node in G.nodes():
         if 'rumor' in G.nodes[node]:
-            print(f"{node} a pris des mesures en réponse à la rumeur.")
+            print(f"{node} took actions in response to the rumor.")
 
-    # Analyser les relations spécifiques pour voir si des nœuds importants ont été affectés
-    important_pnjs = ["Seigneur", "Garde", "Forgeron", "Chasseur", "Marchand", "Guérisseur"]
-    print("\nImpact spécifique sur les PNJ importants:")
-    for pnj in important_pnjs:
-        if pnj in G.nodes() and 'rumor' in G.nodes[pnj]:
-            print(f"{pnj} a été directement affecté par la rumeur : {G.nodes[pnj]['rumor']}")
+    # Analyze specific relationships to see if important nodes have been affected
+    important_npcs = ["Lord", "Guard", "Blacksmith", "Hunter", "Merchant", "Healer"]
+    print("\nSpecific impact on important NPCs:")
+    for npc in important_npcs:
+        if npc in G.nodes() and 'rumor' in G.nodes[npc]:
+            print(f"{npc} was directly affected by the rumor: {G.nodes[npc]['rumor']}")
 
-    # Retourner les nœuds affectés
-    affected_nodes = [node for node, data in G.nodes(data=True) if 'rumor' in data]
-    return affected_nodes
+    return list(impacted_nodes)
 
-# Appel de la fonction pour exécuter l'analyse si ce script est exécuté directement
+# Call the function to perform the analysis if this script is executed directly
 if __name__ == "__main__":
     csv_path = os.path.join(os.path.dirname(__file__), "dialogues_valoria_enriched.csv")
-    analyze_impact(csv_path, "Garde", "Une attaque imminente a été signalée.")
+    analyze_impact(csv_path, "Guard", "An imminent attack has been reported.")

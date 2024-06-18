@@ -4,22 +4,22 @@ from src.simulate_interactions import load_graph_from_csv, simulate_interaction,
 
 class TestSimulateInteractions(unittest.TestCase):
     def setUp(self):
-        # Chemin relatif vers le fichier CSV de test
+        # Relative path to the test CSV file
         self.csv_path = os.path.join(os.path.dirname(__file__), "dialogues_valoria_enriched.csv")
         self.G, self.df = load_graph_from_csv(self.csv_path)
 
     def test_simulate_interaction(self):
-        # Teste la simulation d'une interaction
-        response = simulate_interaction("Guérisseur", "Merci pour votre aide avec ces herbes rares.", self.df)
-        self.assertIn("Guérisseur (Soigneur): Merci pour votre aide avec ces herbes rares.", response)
+        # Test the simulation of an interaction
+        response = simulate_interaction("Healer", "Thank you for your help with these rare herbs.", self.df)
+        self.assertIn("Healer (Healer): Thank you for your help with these rare herbs.", response)
 
     def test_propagate_rumor(self):
-        # Teste la propagation d'une rumeur
-        propagations = propagate_rumor(self.G, "Guérisseur", "Le joueur a aidé le Guérisseur avec des herbes rares.")
+        # Test the propagation of a rumor
+        propagations = propagate_rumor(self.G, "Healer", "The player helped the Healer with rare herbs.")
         self.assertGreater(len(propagations), 0)
         for propagation in propagations:
-            self.assertIn("Guérisseur", propagation)
-            self.assertIn("Le joueur a aidé le Guérisseur avec des herbes rares.", propagation)
+            self.assertIn("Healer", propagation)
+            self.assertIn("The player helped the Healer with rare herbs.", propagation)
 
 if __name__ == '__main__':
     unittest.main()

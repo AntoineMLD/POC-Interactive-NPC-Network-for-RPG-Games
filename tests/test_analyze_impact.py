@@ -5,18 +5,18 @@ from src.analyze_impact import analyze_impact
 class TestAnalyzeImpact(unittest.TestCase):
 
     def setUp(self):
-        # Chemin relatif vers le fichier CSV de test
+        # Relative path to the test CSV file
         self.csv_path = os.path.join(os.path.dirname(__file__), "dialogues_valoria_enriched.csv")
-        self.rumor = "Une attaque imminente a été signalée."
-        self.start_node = "Garde"
+        self.rumor = "An imminent attack has been reported."
+        self.start_node = "Guard"
 
     def test_analyze_impact(self):
-        # Appel de la fonction analyze_impact
+        # Call the analyze_impact function
         impacted_nodes = analyze_impact(self.csv_path, self.start_node, self.rumor)
-        # Vérifier que les nœuds impactés sont corrects (ici vous pouvez ajuster en fonction des résultats attendus)
-        self.assertIn("Garde", impacted_nodes)
-        self.assertIn("Marchand", impacted_nodes)
-        self.assertIn("Chasseur", impacted_nodes)
+        # Check that the impacted nodes are correct (you can adjust based on expected results)
+        self.assertIn("Guard", impacted_nodes)
+        self.assertIn("Merchant", impacted_nodes)
+        self.assertIn("Hunter", impacted_nodes)
         
 if __name__ == "__main__":
     unittest.main()

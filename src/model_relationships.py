@@ -6,33 +6,33 @@ import os
 def model_relationships(csv_path):
     df = pd.read_csv(csv_path)
 
-    # Créer le graphe des interactions entre les PNJ
+    # Create the graph of interactions between NPCs
     G = nx.Graph()
 
-    # Ajouter des nœuds pour chaque PNJ
-    for pnj in df['PNJ'].unique():
-        G.add_node(pnj, role=df[df['PNJ'] == pnj]['Rôle'].iloc[0])
+    # Add nodes for each NPC
+    for npc in df['NPC'].unique():
+        G.add_node(npc, role=df[df['NPC'] == npc]['Role'].iloc[0])
 
-    # Ajouter des arêtes basées sur les interactions décrites dans le fichier CSV
+    # Add edges based on interactions described in the CSV file
     for index, row in df.iterrows():
-        if pd.notna(row['Rumeur/Action']):
-            G.add_edge(row['PNJ'], row['Rumeur/Action'], context=row['Contexte'])
+        if pd.notna(row['Rumor/Action']):
+            G.add_edge(row['NPC'], row['Rumor/Action'], context=row['Context'])
 
     return G
 
 def plot_relationships(graph):
-    # Positionner les nœuds du graphe pour la visualisation
+    # Position the nodes of the graph for visualization
     pos = nx.spring_layout(graph)
 
-    # Dessiner le graphe
+    # Draw the graph
     plt.figure(figsize=(12, 8))
     nx.draw(graph, pos, with_labels=True, node_color='lightblue', edge_color='grey', node_size=2000, font_size=10, font_weight='bold')
 
-    # Ajouter des étiquettes aux arêtes pour montrer le contexte des interactions
+    # Add labels to the edges to show the context of interactions
     edge_labels = nx.get_edge_attributes(graph, 'context')
     nx.draw_networkx_edge_labels(graph, pos, edge_labels=edge_labels)
 
-    plt.title("Graphique des Interactions entre les PNJ à Valoria")
+    plt.title("Graph of Interactions between NPCs in Valoria")
     plt.show()
 
 if __name__ == "__main__":

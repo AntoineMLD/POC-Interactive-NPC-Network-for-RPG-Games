@@ -6,87 +6,87 @@ import os
 def load_graph_from_csv(csv_path):
     df = pd.read_csv(csv_path)
 
-    # Créer le graphe des interactions entre les PNJ
+    # Create the graph of interactions between NPCs
     G = nx.Graph()
 
-    # Ajouter des nœuds pour chaque PNJ
-    for pnj in df['PNJ'].unique():
-        G.add_node(pnj, role=df[df['PNJ'] == pnj]['Rôle'].iloc[0])
+    # Add nodes for each NPC
+    for npc in df['NPC'].unique():
+        G.add_node(npc, role=df[df['NPC'] == npc]['Role'].iloc[0])
 
-    # Ajouter des arêtes basées sur les interactions décrites dans le fichier CSV
+    # Add edges based on interactions described in the CSV file
     for index, row in df.iterrows():
-        if pd.notna(row['Rumeur/Action']):
-            G.add_edge(row['PNJ'], row['Rumeur/Action'], context=row['Contexte_détaillé'])
+        if pd.notna(row['Rumor/Action']):
+            G.add_edge(row['NPC'], row['Rumor/Action'], context=row['Detailed_Context'])
 
     return G, df
 
 def propagate_rumor(graph, start_node, rumor):
-    # Marquer le nœud de départ avec la rumeur
+    # Mark the starting node with the rumor
     nx.set_node_attributes(graph, {start_node: rumor}, 'rumor')
 
-    # Utiliser une file d'attente pour propager la rumeur à travers le graphe
+    # Use a queue to propagate the rumor through the graph
     queue = [start_node]
     propagations = []
 
     while queue:
         current_node = queue.pop(0)
         for neighbor in graph.neighbors(current_node):
-            if 'rumor' not in graph.nodes[neighbor]:  # Propager seulement si le voisin n'a pas déjà reçu la rumeur
+            if 'rumor' not in graph.nodes[neighbor]:  # Only propagate if the neighbor has not already received the rumor
                 graph.nodes[neighbor]['rumor'] = rumor
                 propagations.append(neighbor)
                 queue.append(neighbor)
-                print(f"Rumeur propagée de {current_node} à {neighbor} : {rumor}")
+                print(f"Rumor propagated from {current_node} to {neighbor}: {rumor}")
 
     return propagations
 
 def visualize_graph(graph):
-    pos = nx.spring_layout(graph, k=0.5)  # Ajuster le paramètre k pour espacer les nœuds
+    pos = nx.spring_layout(graph, k=0.5)  # Adjust the parameter k to space out the nodes
 
     plt.figure(figsize=(14, 10))
 
-    # Vérifier que tous les nœuds ont un rôle défini
+    # Ensure all nodes have a defined role
     roles = nx.get_node_attributes(graph, 'role')
     for node in graph.nodes():
         if node not in roles or roles[node] is None:
-            roles[node] = 'Unknown'  # Attribuer un rôle par défaut
+            roles[node] = 'Unknown'  # Assign a default role
 
-    # Assigner des couleurs en fonction des rôles
+    # Assign colors based on roles
     unique_roles = list(set(roles.values()))
     role_colors = {role: plt.cm.tab10(i % 10) for i, role in enumerate(unique_roles)}
 
     colors = [role_colors[roles[n]] for n in graph.nodes()]
 
-    # Augmenter la taille des nœuds pour certains rôles
-    sizes = [1000 if roles[n] in ["Garde", "Seigneur"] else 500 for n in graph.nodes()]  # Augmenter la taille des nœuds importants
+    # Increase the size of the nodes for certain roles
+    sizes = [1000 if roles[n] in ["Garde", "Seigneur"] else 500 for n in graph.nodes()]  # Increase the size of important nodes
 
     nx.draw_networkx_nodes(graph, pos, node_color=colors, node_size=sizes)
     nx.draw_networkx_edges(graph, pos, edge_color='grey')
 
-    # Ajouter des étiquettes aux arêtes pour montrer le contexte des interactions
+    # Add labels to edges to show the context of interactions
     edge_labels = nx.get_edge_attributes(graph, 'context')
     nx.draw_networkx_edge_labels(graph, pos, edge_labels=edge_labels, font_size=10)
 
-    # Ajouter des étiquettes de rumeurs aux nœuds
+    # Add rumor labels to nodes
     node_labels = nx.get_node_attributes(graph, 'rumor')
     nx.draw_networkx_labels(graph, pos, labels=node_labels, font_color='red', font_size=12, font_weight='bold')
 
-    # Ajouter les étiquettes des nœuds avec une police plus grande
+    # Add node labels with larger font
     labels = {node: node for node in graph.nodes()}
     nx.draw_networkx_labels(graph, pos, labels=labels, font_size=12, font_color='black', font_weight='bold')
 
-    # Ajouter une légende pour les rôles
-    plt.legend(handles=[plt.Line2D([0], [0], marker='o', color='w', markerfacecolor=role_colors[role], markersize=10, label=role) for role in unique_roles], loc='upper left', title='Rôles')
+    # Add a legend for the roles
+    plt.legend(handles=[plt.Line2D([0], [0], marker='o', color='w', markerfacecolor=role_colors[role], markersize=10, label=role) for role in unique_roles], loc='upper left', title='Roles')
 
-    plt.title("Propagation de la Rumeur dans le Réseau de PNJ à Valoria", fontsize=15)
+    plt.title("Rumor Propagation in the NPC Network of Valoria", fontsize=15)
     plt.show()
 
-# Si ce script est exécuté directement, exécuter les fonctions principales
+# If this script is run directly, execute the main functions
 if __name__ == "__main__":
     csv_path = os.path.join(os.path.dirname(__file__), "dialogues_valoria_enriched.csv")
     G, df = load_graph_from_csv(csv_path)
 
-    # Exécuter la propagation de la rumeur
-    propagate_rumor(G, "Garde", "Une attaque imminente a été signalée.")
+    # Execute rumor propagation
+    propagate_rumor(G, "Garde", "An imminent attack has been reported.")
     
-    # Visualiser le graphe
+    # Visualize the graph
     visualize_graph(G)
