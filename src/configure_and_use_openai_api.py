@@ -9,9 +9,9 @@ load_dotenv(dotenv_path)
 def configure_openai_api():
     """Configure les paramètres de l'API OpenAI en utilisant les variables d'environnement."""
     openai.api_type = "azure"
-    openai.api_key = os.getenv("openai_api_key")
-    openai.api_base = os.getenv("openai_api_base")
-    openai.api_version = os.getenv("openai_api_version")
+    openai.api_key = os.getenv("OPENAI_API_KEY")
+    openai.api_base = os.getenv("OPENAI_API_BASE")
+    openai.api_version = os.getenv("OPENAI_API_VERSION")
 
     # Vérification des valeurs chargées
     if None in [openai.api_key, openai.api_base, openai.api_version]:
@@ -23,7 +23,7 @@ configure_openai_api()
 # Fonction pour générer un dialogue avec GPT-3.5 Turbo
 def generate_dialogue(prompt):
     response = openai.Completion.create(
-        engine=os.getenv("openai_api_deployment"),
+        engine=os.getenv("OPENAI_API_DEPLOYMENT"),
         prompt=prompt,
         max_tokens=200,      # Augmenter le nombre de tokens pour permettre des réponses plus longues si nécessaire
         temperature=0.7,     # Contrôle la créativité de la réponse
