@@ -2,10 +2,20 @@ import streamlit as st
 import pandas as pd
 import networkx as nx
 import matplotlib.pyplot as plt
+import sys 
+import os 
+
+# Ajouter le répertoire 'src' au PYTHONPATH
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..', 'src')))
+
 from configure_and_use_openai_api import generate_dialogue
 
-# Charger le fichier CSV enrichi des dialogues
-df = pd.read_csv("dialogues_valoria_enriched.csv")
+# Ajouter le répertoire parent du répertoire courant au PYTHONPATH
+import sys
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
+
+csv_path = os.path.join(os.path.dirname(__file__), "dialogues_valoria_enriched.csv")
+df = pd.read_csv(csv_path)
 
 # Créer le graphe des interactions entre les PNJ
 G = nx.Graph()
@@ -23,7 +33,7 @@ for index, row in df.iterrows():
     if pd.notna(row['Rumeur/Action']):
         G.add_edge(row['PNJ'], row['Rumeur/Action'], context=row['Contexte_détaillé'])
 
-# Initialiser l'état de session pour les interactions et les quêtes
+# Initialiser les clés du session_state manquantes
 if 'selected_pnj' not in st.session_state:
     st.session_state.selected_pnj = df['PNJ'].unique()[0]
 

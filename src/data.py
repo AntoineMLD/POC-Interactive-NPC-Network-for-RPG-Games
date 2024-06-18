@@ -1,4 +1,5 @@
 import pandas as pd
+import os
 
 # Créer le DataFrame enrichi
 data = {
@@ -34,8 +35,17 @@ data = {
 # Créer le DataFrame
 df_enriched = pd.DataFrame(data)
 
-# Enregistrer le DataFrame en tant que fichier CSV
-csv_file_path = "dialogues_valoria.csv"
+# Définir le chemin du répertoire src
+src_dir = os.path.join(os.path.dirname(__file__), "src")
+
+# S'assurer que le répertoire src existe
+os.makedirs(src_dir, exist_ok=True)
+
+# Définir le chemin complet du fichier CSV dans le répertoire src
+csv_file_path = os.path.join(src_dir, "dialogues_valoria_enriched.csv")
+
+# Enregistrer le DataFrame en tant que fichier CSV dans le répertoire src
 df_enriched.to_csv(csv_file_path, index=False)
 
 print(f"Fichier CSV enrichi enregistré sous {csv_file_path}")
+        

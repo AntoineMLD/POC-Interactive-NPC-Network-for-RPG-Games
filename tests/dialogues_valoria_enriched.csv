@@ -1,0 +1,28 @@
+PNJ,Rôle,Contexte,Émotion,Intention,Dialogue,Rumeur/Action,Contexte_détaillé,Émotions_détaillées
+Guérisseur,Soigneur,Santé,Reconnaissant,Aider,Je suis heureux de vous voir ici.,Guérir,Récupération,Joie
+Marchand,Commerçant,Commerce,Soulagé,Diffuser,Le Marchand annonce que le Guérisseur cherche des herbes rares.,Guérisseur,Alerte,Soulagement
+Forgeron,Artisan,Défense,Précautionneux,Protéger,Nous devons fortifier le village avec des barrières solides.,Sécurité,Préparation,Prudence
+Chasseur,Chasseur,Exploration,Curieux,Observer,J'ai vu des traces de loups près de la forêt.,Avertissement,Observation,Inquiétude
+Garde,Protecteur,Sécurité,Déterminé,Surveiller,Nous devons renforcer les patrouilles autour du village.,Préparation,Sécurité,Vigilance
+Seigneur,Dirigeant,Gestion,Autoritaire,Organiser,Il est crucial de planifier notre défense contre les menaces extérieures.,Coordination,Organisation,Responsabilité
+Fermière,Travailleur,Champs,Reconnaissante,Travailler,Merci de m'aider à récolter les pommes de terre.,Aide,Récolte,Gratitude
+Guérisseur,Soigneur,Attaque,Inquiet,Aider,Je crains que l'attaque ne cause des blessures graves.,Guérir,Préparation,Panique
+Marchand,Commerçant,Attaque,Anxieux,Informer,Le Marchand a entendu des rumeurs sur une attaque imminente.,Garde,Précaution,Alerte
+Forgeron,Artisan,Approvisionnement,Industriel,Produire,Nous avons besoin de plus de matériaux pour les armes.,Sécurité,Ressources,Urgence
+Chasseur,Chasseur,Quête,Excité,Explorer,Je suis à la recherche d'une créature rare dans les montagnes.,Curiosité,Aventure,Excitation
+Garde,Protecteur,Sécurité,Protecteur,Défendre,Je ne laisserai personne passer sans être contrôlé.,Sécurité,Contrôle,Fermeté
+Seigneur,Dirigeant,Cérémonie,Solennel,Diriger,Nous devons célébrer nos victoires pour renforcer le moral.,Organisation,Fête,Pride
+Fermière,Travailleur,Récolte,Content,Collecter,La récolte cette année a été abondante grâce à votre aide.,Aide,Stockage,Satisfaction
+Guérisseur,Soigneur,Approvisionnement,Concentré,Collecter,Je dois récupérer plus d'herbes médicinales dans la forêt.,Recherche,Collecte,Focus
+Marchand,Commerçant,Négociation,Satisfait,Négocier,J'ai trouvé un acheteur pour nos produits de haute qualité.,Transaction,Vente,Satisfaction
+Forgeron,Artisan,Construction,Engagé,Fabriquer,Je vais fabriquer de nouvelles armes pour renforcer nos défenses.,Défense,Production,Détermination
+Chasseur,Chasseur,Surveillance,Attentif,Patrouiller,Je surveille les environs pour détecter toute activité suspecte.,Sécurité,Observation,Attention
+Garde,Protecteur,Renfort,Optimiste,Renforcer,"Avec de nouveaux renforts, nous pouvons protéger efficacement le village.",Défense,Sécurisation,Optimisme
+Seigneur,Dirigeant,Planification,Stratégique,Planifier,Nous devons élaborer un plan détaillé pour l'expansion de notre village.,Développement,Stratégie,Détermination
+Fermière,Travailleur,Préparation,Impliquée,Organiser,Je dois organiser les provisions pour l'hiver.,Approvisionnement,Organisation,Responsabilité
+Garde,Défenseur,Sécurité,Inquiet,Informer,"Il y a des signes d'activité suspecte près de la forêt.",Chasseur,Présence suspecte,Alerte
+Chasseur,Surveillance,Sécurité,Prudent,Investiguer,"Merci pour l'info. Je vais surveiller cette zone.",Garde,Surveillance accrue,Attention
+Marchand,Commerçant,Commerce,Préoccupé,Coordonner,"Nous avons besoin de plus de métal pour les armes.",Forgeron,Demande de ressources,Souci
+Forgeron,Artisan,Production,Coopératif,Fournir,"Je vais préparer les ressources nécessaires.",Marchand,Préparation des ressources,Engagement
+Fermière,Productrice,Alimentation,Occupé,Discuter,"Nous devons récolter le blé avant l'orage.",Marchand,Planification de la récolte,Préoccupation
+Marchand,Commerçant,Commerce,Organisé,Coordonner,"Je vais envoyer des travailleurs pour aider à la récolte.",Fermière,Assistance à la récolte,Soutien
