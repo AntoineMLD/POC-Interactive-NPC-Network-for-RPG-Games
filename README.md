@@ -64,13 +64,13 @@ Docker Setup
 
     bash
 
-docker build -t npc_network_poc .
+docker build -t npc_poc .
 
 Run the Docker Container:
 
 bash
 
-    docker run -p 8501:8501 npc_network_poc
+    docker run -p 8501:8501 npc_poc
 
     Access the Application:
         Open your web browser and navigate to http://localhost:8501.
